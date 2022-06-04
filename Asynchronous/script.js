@@ -19,24 +19,33 @@ const countryDataOnScreen = function(data, className = '') {
     countriesContainer.style.opacity = 1;
 }
 ///////////////////////////////////////
-const countryDataRender = function(country) {
-    const request = new XMLHttpRequest();
-    request.open('GET', `https://restcountries.com/v2/name/${country}`);
-    request.send();
-    request.addEventListener('load', function () {
-        const [data] = JSON.parse(this.responseText);
-        console.log(data);
-        countryDataOnScreen(data);
-        const request1 = new XMLHttpRequest();
-        request1.open('GET', `https://restcountries.com/v2/alpha/${data.borders[0]}`);
-        request1.send();
-        request1.addEventListener('load', function () {
-            const neighbour = JSON.parse(this.responseText);
-            console.log(neighbour);
-            countryDataOnScreen(neighbour, 'neighbour');
-        });
-    });
+// const countryDataRender = function(country) {
+//     const request = new XMLHttpRequest();
+//     request.open('GET', `https://restcountries.com/v2/name/${country}`);
+//     request.send();
+//     request.addEventListener('load', function () {
+//         const [data] = JSON.parse(this.responseText);
+//         console.log(data);
+//         countryDataOnScreen(data);
+//         const request1 = new XMLHttpRequest();
+//         request1.open('GET', `https://restcountries.com/v2/alpha/${data.borders[0]}`);
+//         request1.send();
+//         request1.addEventListener('load', function () {
+//             const neighbour = JSON.parse(this.responseText);
+//             console.log(neighbour);
+//             countryDataOnScreen(neighbour, 'neighbour');
+//         });
+//     });
+// }
+const countryDataRender = function(country){
+    fetch(`https://restcountries.com/v2/name/${country}`)
+    .then(el => el.json())
+    .then(data => {
+        countryDataOnScreen(data[0])
+        return fetch(`https://restcountries.com/v2/alpha/${data[0].borders[0]}`);
+    })
+    .then(response => response.json())
+    .then(data => countryDataOnScreen(data, 'neighbour'));
 }
-
-// countryDataRender('USA');
+    // countryDataRender('USA');
 countryDataRender('UK');
