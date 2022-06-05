@@ -37,15 +37,30 @@ const countryDataOnScreen = function(data, className = '') {
 //         });
 //     });
 // }
+const renderErr = function(msg) {
+    countriesContainer.insertAdjacentText('beforeend', msg);
+}
+const errorHandler = function(msg) {
+    console.log(msg)
+}
+
+const getJson = function(url, msg = 'Something went wrong') {
+    return fetch(url).then(response => {
+        if(!response.ok) throw new Error(`${msg} ${response.status}`);
+        return response.json();
+    })
+}
+
 const countryDataRender = function(country){
-    fetch(`https://restcountries.com/v2/name/${country}`)
-    .then(el => el.json())
+    getJson(`https://restcountries.com/v2/name/${country}`, 'Country Not Found')
     .then(data => {
         countryDataOnScreen(data[0])
-        return fetch(`https://restcountries.com/v2/alpha/${data[0].borders[0]}`);
+        return getJson(`https://restcountries.com/v2/alpha/${data[0].borders[0]}`, 'Neighbour not found');
     })
-    .then(response => response.json())
-    .then(data => countryDataOnScreen(data, 'neighbour'));
+    .then(data => countryDataOnScreen(data, 'neighbour'))
+    .catch(err => errorHandler(`Something went wrong ${err}`))
+    .finally(() => countriesContainer.style.opacity = 1);
 }
-    // countryDataRender('USA');
-countryDataRender('UK');
+btn.addEventListener('click', function() {
+    countryDataRender('UK');
+})
