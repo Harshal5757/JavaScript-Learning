@@ -41,7 +41,7 @@ const renderErr = function(msg) {
     countriesContainer.insertAdjacentText('beforeend', msg);
 }
 const errorHandler = function(msg) {
-    console.log(msg)
+    console.error(msg)
 }
 
 const getJson = function(url, msg = 'Something went wrong') {
@@ -55,6 +55,8 @@ const countryDataRender = function(country){
     getJson(`https://restcountries.com/v2/name/${country}`, 'Country Not Found')
     .then(data => {
         countryDataOnScreen(data[0])
+        const neighbour = data[0].borders?.[0]
+        if(!neighbour) throw new Error('Neighbour not found');
         return getJson(`https://restcountries.com/v2/alpha/${data[0].borders[0]}`, 'Neighbour not found');
     })
     .then(data => countryDataOnScreen(data, 'neighbour'))
@@ -64,7 +66,8 @@ const countryDataRender = function(country){
 
 btn.addEventListener('click', function() {
     // countryDataRender('UK');
-    whereIam(52.508, 13.381);
+    navigator.geolocation.getCurrentPosition((pos) => whereIam(pos.coords.latitude, pos.coords.longitude));
+    // navigator.geolocation.getCurrentPosition((pos) => whereIam(52.508, 13.381));
 });
 
 
@@ -94,7 +97,6 @@ TEST COORDINATES 2: -33.933, 18.474
 GOOD LUCK 😀
 */
 const whereIam = function(lat, lng) {
-    console.log(`https://geocode.xyz/${lat},${lng}?geoit=json`);
     fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
     .then(el => el.json()).then(data => {
         console.log(`You are in ${data.region}, ${data.country}`);
@@ -104,6 +106,6 @@ const whereIam = function(lat, lng) {
         if(!res.ok) throw new Error(`Country not Found ${res.status}`)
         return res.json();
     })
-    .then(data => countryDataOnScreen(data[0]))
+    .then(data => countryDataRender(data[0].name))
     .catch(err => console.log(`${err.message}`));
 }
