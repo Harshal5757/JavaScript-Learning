@@ -16,7 +16,6 @@ const countryDataOnScreen = function(data, className = '') {
         </article>
     `;
     countriesContainer.insertAdjacentHTML('beforeend', html);
-    countriesContainer.style.opacity = 1;
 }
 ///////////////////////////////////////
 // const countryDataRender = function(country) {
@@ -64,12 +63,11 @@ const countryDataRender = function(country){
     .finally(() => countriesContainer.style.opacity = 1);
 }
 
-btn.addEventListener('click', function() {
-    // countryDataRender('UK');
-    navigator.geolocation.getCurrentPosition((pos) => whereIam(pos.coords.latitude, pos.coords.longitude));
-    // navigator.geolocation.getCurrentPosition((pos) => whereIam(52.508, 13.381));
-});
-
+const getLocation = function() {
+    return new Promise(function(resolve, reject) {
+        navigator.geolocation.getCurrentPosition(resolve, reject)            
+    })
+}
 
 // Coding Challenge #1
 
@@ -97,15 +95,19 @@ TEST COORDINATES 2: -33.933, 18.474
 GOOD LUCK 😀
 */
 const whereIam = function(lat, lng) {
-    fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
-    .then(el => el.json()).then(data => {
+    getJson(`https://geocode.xyz/${lat},${lng}?geoit=json`, `Error while retriveing Reverse goalocation`)
+    .then(data => {
         console.log(`You are in ${data.region}, ${data.country}`);
-        return fetch(`https://restcountries.com/v2/name/${data.country}`);
-    })
-    .then(res => {
-        if(!res.ok) throw new Error(`Country not Found ${res.status}`)
-        return res.json();
+        return getJson(`https://restcountries.com/v2/name/${data.country}`, `Country not Found`)
     })
     .then(data => countryDataRender(data[0].name))
     .catch(err => console.log(`${err.message}`));
 }
+
+btn.addEventListener('click', function() {
+    // countryDataRender('UK');
+    getLocation().then(pos => {
+        const {latitude: lat, longitude: lng} = pos.coords
+        whereIam(lat, lng);
+    }).catch(err => console.error(`Failed to load current Location ${err}`));
+});
