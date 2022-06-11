@@ -1,26 +1,27 @@
 'use strict';
-
-const rollDiceBtn = document.querySelector('.btn--roll');
-const player1Score = document.querySelector('#score--0');
-const player2Score = document.querySelector('#score--1');
-const player1CurrentScore = document.querySelector('#current--0');
-const player2CurrentScore = document.querySelector('#current--1');
+// Selecting Elements & veriable declearation
 const player1Section = document.querySelector('.player--0');
 const player2Section = document.querySelector('.player--1');
 const diceImg = document.querySelector('.dice');
-// diceImg.style.display = 'none';
+let currentScore, activePlayer, playing;
 
-// let diceNumber;
-// let currentScorePlayer1, currentScorePlayer2;
-let currentScore, activePlayer;
+// Functions
 const startGame = function() {
-    player1Score.textContent = 0;
-    player2Score.textContent = 0;
+    document.querySelector('#score--0').textContent = 0;
+    document.querySelector('#score--1').textContent = 0;
     activePlayer = 0;
     currentScore = 0;
+    playing = true;
+    diceImg.classList.add('hidden');
+    player1Section.classList.remove('player--winner');
+    player2Section.classList.remove('player--winner');
+    player1Section.classList.add('player--active');
+    player2Section.classList.remove('player--active');
 }
 
-startGame();
+const randomNumberGenerator = function() {
+    return Math.trunc(Math.random()*6 +1);
+}
 
 const switchPlayer = function () {
     document.getElementById(`current--${activePlayer}`).textContent = 0;
@@ -30,11 +31,24 @@ const switchPlayer = function () {
     player2Section.classList.toggle('player--active');
 }
 
-const randomNumberGenerator = function() {
-    return Math.trunc(Math.random()*6 +1);
+const hold = function() {
+    if(!playing) return;
+    let score = document.getElementById(`score--${activePlayer}`).textContent
+    score = Number(score) + currentScore;
+    document.getElementById(`score--${activePlayer}`).textContent = score;
+    if(score >= 100) {
+        player1Section.classList.add('player--winner');
+        player1Section.classList.remove('player--active');
+        playing = false;
+        return;
+    }
+    switchPlayer();
 }
-rollDiceBtn.addEventListener('click', function() {
-    const diceNumber = randomNumberGenerator()
+
+const rollDices = function() {
+    if(!playing) return;
+    const diceNumber = randomNumberGenerator();
+    diceImg.classList.remove('hidden');
     diceImg.setAttribute('src', `dice-${diceNumber}.png`);
     if(diceNumber === 1) {
         switchPlayer();
@@ -42,4 +56,14 @@ rollDiceBtn.addEventListener('click', function() {
     }
     currentScore += diceNumber;
     document.getElementById(`current--${activePlayer}`).textContent = currentScore;
-})
+}
+
+// Add Eventlistener to buttons
+document.querySelector('.btn--roll').addEventListener('click', rollDices);
+
+document.querySelector('.btn--hold').addEventListener('click', hold);
+
+document.querySelector('.btn--new').addEventListener('click', startGame);
+
+// STARTGAME
+startGame();
